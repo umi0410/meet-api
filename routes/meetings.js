@@ -9,17 +9,17 @@ let User = require("../models/User");
 let Match = require("../models/Match");
 /* GET meeting information */
 router.get("/", async function(req, res) {
-	let { excludeCandidates } = await User.findById(res.locals.auth.id);
+	let { excludeCandidates } = await User.findById(res.locals.auth._id);
 
 	let candidates = await User.find({
 		_id: {
-			$nin: [...excludeCandidates, res.locals.auth.id]
+			$nin: [...excludeCandidates, res.locals.auth._id]
 		}
 	}).select("id");
 	let randomIndex = Math.floor(Math.random() * candidates.length);
 	let meetingInformation = await User.findOne({
 		_id: {
-			$nin: [...excludeCandidates, res.locals.auth.id]
+			$nin: [...excludeCandidates, res.locals.auth._id]
 		}
 	})
 		.skip(randomIndex)
@@ -43,7 +43,7 @@ router.post("/", async function(req, res) {
 			message: "No partner found" + JSON.stringify(req.body)
 		});
 	} else {
-		let user = await User.findById(res.locals.auth.id);
+		let user = await User.findById(res.locals.auth._id);
 		console.log(user);
 		console.log("상대방이 좋아한 사람");
 		console.log(partner.likePartners);
@@ -52,10 +52,10 @@ router.post("/", async function(req, res) {
 			console.log("추가함");
 			user.likePartners.push(partner.id);
 		}
-		if (partner.likePartners.includes(res.locals.auth.id)) {
+		if (partner.likePartners.includes(res.locals.auth._id)) {
 			console.log("매치 성공");
 			let match = await new Match({
-				participants: [partner._id, res.locals.auth.id]
+				participants: [partner._id, res.locals.auth._id]
 			});
 			match = await match
 				.populate(

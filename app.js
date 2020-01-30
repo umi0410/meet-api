@@ -9,7 +9,7 @@ const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
 const meetingsRouter = require("./routes/meetings");
 const matchsRouter = require("./routes/matches");
-const chatRouter = require("./routes/chats");
+const chatRouter = require("./routes/messages");
 const app = express();
 const cors = require("cors");
 app.use(cors());
@@ -32,6 +32,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
+const Message = require("./models/Message");
 /*** Socket.IO 추가 ***/
 
 function filterSocketNames(property, value) {
@@ -80,10 +81,18 @@ app.io.on("connection", function(socket) {
 		console.log("user disconnected");
 	});
 
-	socket.on("sendMessage", function(data) {
+	socket.on("sendMessage", async function(data) {
 		socket.emit("sentMessage", data);
+		console.log(data);
+		//chatRoom이 곧 match임
+		let message = new Message({
+			match: data.chatRoom._id,
+			sender: data.sender._id,
+			data: data.message
+		});
+		await message.save();
 		let socketNames = filterSocketNames("_id", data.recipient._id);
-		emitToSocketBySocketNames(socketNames, "receiveMessage", data);
+		emitToSocketBySocketNames(socketNames, "receiveMessage", message);
 	});
 });
 

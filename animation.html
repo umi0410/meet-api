@@ -1,0 +1,28 @@
+<body>
+
+    <style>
+            #menu #list {
+                max-height: 0;
+                transition: max-height 0.15s ease-out;
+                overflow: hidden;
+                background: #d5d5d5;
+            }
+            
+            #menu:hover #list {
+                max-height: 500px;
+                transition: max-height 0.25s ease-in;
+            }
+    </style>
+    <h1 class="animation">asdasdasd</h1>
+    <div id="menu">
+            <a>hover me</a>
+            <ul id="list">
+                <!-- Create a bunch, or not a bunch, of li's to see the timing. -->
+                <li>item</li>
+                <li>item</li>
+                <li>item</li>
+                <li>item</li>
+                <li>item</li>
+            </ul>
+        </div>
+</body>

@@ -10,6 +10,8 @@ const usersRouter = require("./routes/users");
 const meetingsRouter = require("./routes/meetings");
 const matchsRouter = require("./routes/matches");
 const chatRouter = require("./routes/messages");
+
+const webpush = require("web-push");
 const app = express();
 const cors = require("cors");
 app.use(cors());
@@ -32,13 +34,54 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
+// web-push 작업
+webpush.setVapidDetails(
+	process.env.WEB_PUSH_CONTACT,
+	process.env.PUBLIC_VAPID_KEY,
+	process.env.PRIVATE_VAPID_KEY
+);
+let globalSubscriptions = [];
+app.post("/notifications/subscribe", (req, res) => {
+	const subscription = req.body;
+	globalSubscriptions.push(subscription);
+	console.log(subscription);
+
+	const payload = JSON.stringify({
+		title: "Hello!",
+		body: "It works."
+	});
+
+	webpush
+		.sendNotification(subscription, payload)
+		.then(result => console.log(result))
+		.catch(e => console.log(e.stack));
+	res.status(200).json({ success: true });
+});
+app.get("/notification/send", (req, res) => {
+	const payload = JSON.stringify({
+		title: "Hello!",
+		body: "It works."
+	});
+	for (let subscription of globalSubscriptions) {
+		console.log(subscription.data.email);
+		webpush
+			.sendNotification(subscription, payload)
+			.then(result => null)
+			.catch(e => console.log(e.stack));
+	}
+
+	res.status(200).json({ success: true });
+});
+app.post("/debugger", (req, res) => {
+	console.log(req.body);
+	res.json({ status: "ok" });
+});
 const Message = require("./models/Message");
 /*** Socket.IO 추가 ***/
 
 function filterSocketNames(property, value) {
 	try {
 		let socketNames = Object.keys(app.io.sockets.sockets);
-
 		let filteredSocketNames = socketNames.filter(socketName => {
 			if (
 				app.io.sockets.sockets[socketName]["store"][property] == value
@@ -59,6 +102,8 @@ function emitToSocketBySocketNames(socketNames, eventName, data) {
 				console.log(app.io.sockets.sockets[name]["store"]);
 				app.io.sockets.sockets[name].emit(eventName, data);
 			}
+		} else {
+			console.log("socket 없음.");
 		}
 	} catch (e) {
 		console.error(e);
@@ -67,7 +112,7 @@ function emitToSocketBySocketNames(socketNames, eventName, data) {
 
 app.io = require("socket.io")();
 app.io.use(function auth(socket, next) {
-	console.log(socket.handshake.query);
+	// console.log(socket.handshake.query);
 	if (!socket["store"]) {
 		socket["store"] = {};
 	}
@@ -82,8 +127,7 @@ app.io.on("connection", function(socket) {
 	});
 
 	socket.on("sendMessage", async function(data) {
-		socket.emit("sentMessage", data);
-		console.log(data);
+		console.log("sentMessage");
 		//chatRoom이 곧 match임
 		let message = new Message({
 			match: data.chatRoom._id,
@@ -91,6 +135,8 @@ app.io.on("connection", function(socket) {
 			data: data.message
 		});
 		await message.save();
+		message = await message.populate("sender").execPopulate();
+		socket.emit("sentMessage", message);
 		let socketNames = filterSocketNames("_id", data.recipient._id);
 		emitToSocketBySocketNames(socketNames, "receiveMessage", message);
 	});

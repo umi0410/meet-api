@@ -4,6 +4,7 @@ version: '3.7'
 services:
   mongo-container:
     image: mongo
+    # 이거 까먹어선 안됨!!
     volumes:
       - $HOME/mongoData:/data/db
 

@@ -22,8 +22,9 @@ services:
     environment:
       # express의 환경변수 설정을 분화시킴.
       - MEET_NODE_ENV=production
+    # nginx에서 host의 3001번을 https로 하였음
     ports:
-      - "3000:3000"
+      - "80:3000"
     
     # 그냥 npm start해도 되긴하는데, log를 어떻게 남길 지는 고민해봐야겠다.
     # 우선은 docker attach CONTAINER_NAME으로 가능은 함.

@@ -23,7 +23,7 @@ router.get("/", async function(req, res) {
 		}
 	})
 		.skip(randomIndex)
-		.select("id university nickname likes hates profileMessage");
+		.select("id university nickname likes hates profileMessage questions");
 	console.log(meetingInformation);
 	return res.json(meetingInformation);
 });

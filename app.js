@@ -5,11 +5,15 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const mongoose = require("mongoose");
+
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
 const meetingsRouter = require("./routes/meetings");
-const matchsRouter = require("./routes/matches");
+const matchesRouter = require("./routes/matches");
 const chatRouter = require("./routes/messages");
+const questionsRouter = require("./routes/questions");
+const tagsRouter = require("./routes/tags");
+const universitiesRouter = require("./routes/universities");
 
 const webpush = require("web-push");
 const app = express();
@@ -151,8 +155,11 @@ app.use("/users", usersRouter);
 const authenticationMiddleware = require("./middlewares/authentication");
 // router.use();
 app.use("/meetings", meetingsRouter);
-app.use("/matches", matchsRouter);
+app.use("/matches", matchesRouter);
 app.use("/chats", chatRouter);
+app.use("/questions", questionsRouter);
+app.use("/tags", tagsRouter);
+app.use("/universities", universitiesRouter);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
 	next(createError(404));

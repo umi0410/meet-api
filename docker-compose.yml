@@ -3,14 +3,15 @@ version: '3.7'
 
 services:
   mongo-container:
+    depends_on:
+      - express-container
     image: mongo
     # 이거 까먹어선 안됨!!
     volumes:
       - $HOME/mongoData:/data/db
 
   express-container:
-    depends_on:
-      - mongo-container
+    
     # ECR에서 meet-api repository의 latest 이미지를 가져온다.
     # image: 325498511266.dkr.ecr.ap-northeast-2.amazonaws.com/meet-api:latest
 
@@ -22,14 +23,13 @@ services:
     environment:
       # express의 환경변수 설정을 분화시킴.
       - MEET_NODE_ENV=production
+      - WAIT_HOSTS=mongo-container:27017
     # nginx에서 host의 3001번을 https로 하였음
     ports:
       - "3001:3000"
     
     # 그냥 npm start해도 되긴하는데, log를 어떻게 남길 지는 고민해봐야겠다.
     # 우선은 docker attach CONTAINER_NAME으로 가능은 함.
-    command:
-      - npm
-      - start
+    command: bash -c "/wait && npm start"
     # volumes:
     #   - ./:/app/

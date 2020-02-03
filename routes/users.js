@@ -2,16 +2,26 @@ const express = require("express");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 let router = express.Router();
-let User = require("../models/User");
-let authentication = require("../middlewares/authentication");
+const User = require("../models/User");
+const authentication = require("../middlewares/authentication");
+const authorization = require("../middlewares/authorization");
 /* GET users listing. */
 //Authentication, Authorization 추가되어야함
-router.get("/:userId", async function(req, res) {
-	let user = await User.findById(req.params.userId).select("-password");
-	if (!user) return res.status(403).json({ message: "no such user" });
-	console.log(user);
-	return res.json(user);
-});
+router.get(
+	"/:userId",
+	authentication.authenticate,
+	authorization.isUserReadable,
+	async function(req, res) {
+		let user = res.locals.user;
+		// await delete user.nickname;
+		user.nickname = undefined;
+		user.likePartners = undefined;
+		user.excludeCandidates = undefined;
+		user.password = undefined;
+		return res.json(user);
+	}
+);
+
 router.post("/register", function(req, res) {
 	let user = new User({
 		email: req.body.email,

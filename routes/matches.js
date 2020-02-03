@@ -3,8 +3,9 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 let router = express.Router();
 
-const authenticationMiddleware = require("../middlewares/authentication");
-router.use(authenticationMiddleware.authenticate);
+const authentication = require("../middlewares/authentication");
+const authorization = require("../middlewares/authorization");
+router.use(authentication.authenticate);
 let User = require("../models/User");
 let Match = require("../models/Match");
 let Message = require("../models/Message");
@@ -25,5 +26,16 @@ router.get("/:matchId", async function(req, res) {
 	console.log(messages);
 	return res.json({ match, messages });
 });
+
+router.delete(
+	"/:matchId",
+	authentication.authenticate,
+	authorization.isMatchDeletable,
+	async function(req, res) {
+		let match = res.locals.match;
+		await match.delete();
+		return res.json(match);
+	}
+);
 
 module.exports = router;

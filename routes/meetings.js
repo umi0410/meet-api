@@ -66,6 +66,16 @@ router.post("/", async function(req, res) {
 			//왜 await 만 쓰면 안 되는 거니..?
 			console.log(match);
 			await match.save();
+			console.log("내 id" + res.locals.auth._id);
+			partner.likePartners = partner.likePartners.filter(likeUser => {
+				//likeUser는 partner가 like한 유저
+				//나는 partner의 likeUsers에서 빼고 match로 넘어감.
+				console.log("내 id" + likeUser._id);
+				if (likeUser._id != res.locals.auth._id) {
+					return true;
+				} else return false;
+			});
+			await partner.save();
 			return res.json({ message: "new match created", match });
 		}
 		await user.save();

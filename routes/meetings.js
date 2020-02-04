@@ -17,15 +17,21 @@ router.get("/", async function(req, res) {
 		}
 	}).select("id");
 	let randomIndex = Math.floor(Math.random() * candidates.length);
-	let meetingInformation = await User.findOne({
+	let partner = await User.findOne({
 		_id: {
 			$nin: [...excludeCandidates, res.locals.auth._id]
 		}
 	})
 		.skip(randomIndex)
 		.select("id university nickname likes hates profileMessage questions");
-	console.log(meetingInformation);
-	return res.json(meetingInformation);
+	let result = {};
+	if (partner) {
+		result.status = "newMeeting";
+		result.partner = partner;
+	} else {
+		result.status = "noMeeting";
+	}
+	return res.json(result);
 });
 router.post("/", async function(req, res) {
 	// console.log(req.query);

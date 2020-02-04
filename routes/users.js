@@ -14,11 +14,14 @@ router.get(
 	async function(req, res) {
 		let user = res.locals.user;
 		// await delete user.nickname;
-		user.nickname = undefined;
+		// user.nickname = undefined;
 		user.likePartners = undefined;
 		user.excludeCandidates = undefined;
 		user.password = undefined;
-		return res.json(user);
+		return res.json({ user: user, status: "success" });
+		// setTimeout(() => {
+
+		// }, 5000);
 	}
 );
 

@@ -26,10 +26,10 @@ router.get("/", async function(req, res) {
 		.select("id university nickname likes hates profileMessage questions");
 	let result = {};
 	if (partner) {
-		result.status = "newMeeting";
+		result.status = "success";
 		result.partner = partner;
 	} else {
-		result.status = "noMeeting";
+		result.status = "failed";
 	}
 	return res.json(result);
 });

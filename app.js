@@ -1,3 +1,8 @@
+if (process.env.MEET_NODE_ENV === "production") {
+	require("dotenv").config({ path: path.join(__dirname, ".env.production") });
+} else {
+	require("dotenv").config();
+}
 const createError = require("http-errors");
 const express = require("express");
 const path = require("path");
@@ -12,15 +17,14 @@ const chatRouter = require("./routes/messages");
 const questionsRouter = require("./routes/questions");
 const tagsRouter = require("./routes/tags");
 const universitiesRouter = require("./routes/universities");
+const webPushRouter = require("./routes/webPush");
 
-if (process.env.MEET_NODE_ENV === "production") {
-	require("dotenv").config({ path: path.join(__dirname, ".env.production") });
-} else {
-	require("dotenv").config();
-}
+const PushSubscription = require("./models/PushSubscription");
+const Message = require("./models/Message");
+const User = require("./models/User");
+const { createPushNotification } = require("./middlewares/push");
 console.log(process.env.MONGO_HOST);
 
-const webpush = require("web-push");
 const app = express();
 const cors = require("cors");
 
@@ -47,48 +51,11 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 // web-push 작업
-webpush.setVapidDetails(
-	process.env.WEB_PUSH_CONTACT,
-	process.env.PUBLIC_VAPID_KEY,
-	process.env.PRIVATE_VAPID_KEY
-);
-let globalSubscriptions = [];
-app.post("/notifications/subscribe", (req, res) => {
-	const subscription = req.body;
-	globalSubscriptions.push(subscription);
-	console.log(subscription);
 
-	const payload = JSON.stringify({
-		title: "Hello!",
-		body: "It works."
-	});
-
-	webpush
-		.sendNotification(subscription, payload)
-		.then(result => console.log(result))
-		.catch(e => console.log(e.stack));
-	res.status(200).json({ success: true });
-});
-app.get("/notification/send", (req, res) => {
-	const payload = JSON.stringify({
-		title: "Hello!",
-		body: "It works."
-	});
-	for (let subscription of globalSubscriptions) {
-		console.log(subscription.data.email);
-		webpush
-			.sendNotification(subscription, payload)
-			.then(result => null)
-			.catch(e => console.log(e.stack));
-	}
-
-	res.status(200).json({ success: true });
-});
 app.post("/debugger", (req, res) => {
 	console.log(req.body);
 	res.json({ status: "ok" });
 });
-const Message = require("./models/Message");
 /*** Socket.IO 추가 ***/
 
 function filterSocketNames(property, value) {
@@ -150,6 +117,23 @@ app.io.on("connection", function(socket) {
 		message = await message.populate("sender").execPopulate();
 		socket.emit("sentMessage", message);
 		let socketNames = filterSocketNames("_id", data.recipient._id);
+		//연결된 소켓이 없으면 push
+		if (socketNames.length == 0) {
+			const subscription = await PushSubscription.findOne({
+				user: data.recipient._id
+			}).populate("user", "nickname email id");
+			// console.log(req.body);
+			console.log(!subscription);
+			if (!subscription) {
+				// console.log(no push)
+				return res.status(404).json({ message: "no subscription" });
+			}
+
+			createPushNotification(subscription, {
+				title: message.sender.nickname + "님에게 메시지 도착",
+				body: message.data
+			});
+		}
 		emitToSocketBySocketNames(socketNames, "receiveMessage", message);
 	});
 });
@@ -168,6 +152,7 @@ app.use("/chats", chatRouter);
 app.use("/questions", questionsRouter);
 app.use("/tags", tagsRouter);
 app.use("/universities", universitiesRouter);
+app.use("/push", webPushRouter);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
 	next(createError(404));

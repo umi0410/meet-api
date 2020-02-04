@@ -31,7 +31,8 @@ router.post(
 			return res.status(401).json({ message: "No such user" });
 		}
 		const isPushExist = await PushSubscription.findOne({
-			endpoint: req.body.endpoint
+			endpoint: req.body.endpoint,
+			user: res.locals.auth._id
 		});
 		console.log(req.body);
 		console.log(!isPushExist);

@@ -127,7 +127,6 @@ app.io.on("connection", function(socket) {
 			console.log(!subscription);
 			if (!subscription) {
 				// console.log(no push)
-				return res.status(404).json({ message: "no subscription" });
 			}
 
 			createPushNotification(subscription, {

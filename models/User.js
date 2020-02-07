@@ -61,6 +61,9 @@ let UserSchema = new Schema({
 			}
 		]
 	},
+	pushToken: {
+		type: String
+	},
 
 	//후보에서 제외시킬 사람 ex block, matched
 

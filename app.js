@@ -18,12 +18,13 @@ const chatRouter = require("./routes/messages");
 const questionsRouter = require("./routes/questions");
 const tagsRouter = require("./routes/tags");
 const universitiesRouter = require("./routes/universities");
-const webPushRouter = require("./routes/webPush");
-
+// const webPushRouter = require("./routes/webPush");
+const pushesRouter = require("./routes/pushes");
 const PushSubscription = require("./models/PushSubscription");
 const Message = require("./models/Message");
 const User = require("./models/User");
 const { createPushNotification } = require("./middlewares/push");
+const request = require("request");
 console.log(process.env.MONGO_HOST);
 
 const app = express();
@@ -120,19 +121,29 @@ app.io.on("connection", function(socket) {
 		let socketNames = filterSocketNames("_id", data.recipient._id);
 		//연결된 소켓이 없으면 push
 		if (socketNames.length == 0) {
-			const subscription = await PushSubscription.findOne({
-				user: data.recipient._id
-			}).populate("user", "nickname email id");
-			// console.log(req.body);
-			console.log(!subscription);
-			if (!subscription) {
-				// console.log(no push)
-			}
-
-			createPushNotification(subscription, {
-				title: message.sender.nickname + "님에게 메시지 도착",
-				body: message.data
-			});
+			let user = await User.findById(data.recipient._id);
+			console.log(user.nickname + "에게 푸시알림 시도");
+			console.log("pushToken", user.pushToken);
+			request.post(
+				{
+					uri: process.env.FIREBASE_URL,
+					body: JSON.stringify({
+						to: user.pushToken,
+						notification: {
+							title: "진솔한 메시지 도착",
+							body: message.data
+						}
+					}),
+					headers: {
+						Authorization:
+							"key=" + process.env.FIREBASE_AUTHORIZATION
+					}
+				},
+				(err, res, body) => {
+					if (err) console.error(err);
+					console.log(body);
+				}
+			);
 		}
 		emitToSocketBySocketNames(socketNames, "receiveMessage", message);
 	});
@@ -152,7 +163,7 @@ app.use("/chats", chatRouter);
 app.use("/questions", questionsRouter);
 app.use("/tags", tagsRouter);
 app.use("/universities", universitiesRouter);
-app.use("/push", webPushRouter);
+app.use("/pushes", pushesRouter);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
 	next(createError(404));

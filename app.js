@@ -19,7 +19,7 @@ const questionsRouter = require("./routes/questions");
 const tagsRouter = require("./routes/tags");
 const universitiesRouter = require("./routes/universities");
 // const webPushRouter = require("./routes/webPush");
-const pushesRouter = require("./routes/pushes");
+// const pushesRouter = require("./routes/pushes");
 const PushSubscription = require("./models/PushSubscription");
 const Message = require("./models/Message");
 const User = require("./models/User");
@@ -124,9 +124,10 @@ app.io.on("connection", function(socket) {
 			let user = await User.findById(data.recipient._id);
 			console.log(user.nickname + "에게 푸시알림 시도");
 			console.log("pushToken", user.pushToken);
+			console.log(process.env.FIREBASE_URL);
 			request.post(
 				{
-					uri: process.env.FIREBASE_URL,
+					url: process.env.FIREBASE_URL,
 					body: JSON.stringify({
 						to: user.pushToken,
 						notification: {

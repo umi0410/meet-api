@@ -19,7 +19,7 @@ services:
     build:
       context: .
       dockerfile: meet-api.Dockerfile
-      
+    
     environment:
       # express의 환경변수 설정을 분화시킴.
       - MEET_NODE_ENV=production

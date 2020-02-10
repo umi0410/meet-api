@@ -77,7 +77,9 @@ io.on("connection", function(socket) {
 				// collapse_key: "your_collapse_key",
 				notification: {
 					title: message.sender.nickname + "님으로부터 메시지 도착",
-					body: message.data
+					body: message.data,
+					image:
+						"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Heart_coraz%C3%B3n.svg/1200px-Heart_coraz%C3%B3n.svg.png"
 				}
 				// data: {
 				//     //you can send only notification or only data(or include both)

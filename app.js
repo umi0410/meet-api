@@ -19,7 +19,7 @@ const questionsRouter = require("./routes/questions");
 const tagsRouter = require("./routes/tags");
 const universitiesRouter = require("./routes/universities");
 // const webPushRouter = require("./routes/webPush");
-// const pushesRouter = require("./routes/pushes");
+const pushesRouter = require("./routes/pushes");
 const PushSubscription = require("./models/PushSubscription");
 const Message = require("./models/Message");
 const User = require("./models/User");
@@ -136,6 +136,7 @@ app.io.on("connection", function(socket) {
 						}
 					}),
 					headers: {
+						"Content-Type": "application/json",
 						Authorization:
 							"key=" + process.env.FIREBASE_AUTHORIZATION
 					}

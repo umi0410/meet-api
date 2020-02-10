@@ -52,109 +52,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-// web-push 작업
-
 app.post("/debugger", (req, res) => {
 	console.log(req.body);
 	res.json({ status: "ok" });
 });
 /*** Socket.IO 추가 ***/
 
-function filterSocketNames(property, value) {
-	try {
-		let socketNames = Object.keys(app.io.sockets.sockets);
-		let filteredSocketNames = socketNames.filter(socketName => {
-			if (
-				app.io.sockets.sockets[socketName]["store"][property] == value
-			) {
-				return true;
-			}
-		});
-		return filteredSocketNames;
-	} catch (e) {
-		console.error(e);
-	}
-}
-
-function emitToSocketBySocketNames(socketNames, eventName, data) {
-	try {
-		if (socketNames.length > 0) {
-			for (let name of socketNames) {
-				console.log(app.io.sockets.sockets[name]["store"]);
-				app.io.sockets.sockets[name].emit(eventName, data);
-			}
-		} else {
-			console.log("socket 없음.");
-		}
-	} catch (e) {
-		console.error(e);
-	}
-}
-
-app.io = require("socket.io")();
-app.io.use(function auth(socket, next) {
-	// console.log(socket.handshake.query);
-	if (!socket["store"]) {
-		socket["store"] = {};
-	}
-	socket["store"]._id = socket.handshake.query.id;
-	next();
-});
-app.io.on("connection", function(socket) {
-	console.log("a user connected");
-
-	socket.on("disconnect", function() {
-		console.log("user disconnected");
-	});
-
-	socket.on("sendMessage", async function(data) {
-		console.log("sentMessage");
-		//chatRoom이 곧 match임
-		let message = new Message({
-			match: data.chatRoom._id,
-			sender: data.sender._id,
-			data: data.message
-		});
-		await message.save();
-		message = await message.populate("sender").execPopulate();
-		socket.emit("sentMessage", message);
-		let socketNames = filterSocketNames("_id", data.recipient._id);
-		//연결된 소켓이 없으면 push
-		if (socketNames.length == 0) {
-			let user = await User.findById(data.recipient._id);
-			console.log(user.nickname + "에게 푸시알림 시도");
-			console.log("pushToken", user.pushToken);
-			console.log(process.env.FIREBASE_URL);
-			request.post(
-				{
-					url: process.env.FIREBASE_URL,
-					body: JSON.stringify({
-						to: user.pushToken,
-						notification: {
-							title: "진솔한 메시지 도착",
-							body: message.data
-						}
-					}),
-					headers: {
-						"Content-Type": "application/json",
-						Authorization:
-							"key=" + process.env.FIREBASE_AUTHORIZATION
-					}
-				},
-				(err, res, body) => {
-					if (err) console.error(err);
-					console.log(body);
-				}
-			);
-		}
-		emitToSocketBySocketNames(socketNames, "receiveMessage", message);
-	});
-});
-
-// setInterval(() => {
-// 	let socketNames = filterSocketNames("id", "5e3248cd23cc972ec573e74a");
-// 	emitToSocketBySocketNames(socketNames, "test", { status: "Good" });
-// }, 1000);
+app.io = require("./routes/socket");
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 const authenticationMiddleware = require("./middlewares/authentication");

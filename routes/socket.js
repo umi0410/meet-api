@@ -1,6 +1,11 @@
 const Message = require("../models/Message");
 const User = require("../models/User");
 const request = require("request");
+const FCM = require("fcm-node");
+
+const serverKey = require("../fcmPrivateKey.json"); //put the generated private key path here
+
+let fcm = new FCM(serverKey);
 
 function filterSocketNames(property, value) {
 	try {
@@ -64,28 +69,53 @@ io.on("connection", function(socket) {
 			let user = await User.findById(data.recipient._id);
 			console.log(user.nickname + "에게 푸시알림 시도");
 			console.log("pushToken", user.pushToken);
-			console.log(process.env.FIREBASE_URL);
-			request.post(
-				{
-					url: process.env.FIREBASE_URL,
-					body: JSON.stringify({
-						to: user.pushToken,
-						notification: {
-							title: "진솔한 메시지 도착",
-							body: message.data
-						}
-					}),
-					headers: {
-						"Content-Type": "application/json",
-						Authorization:
-							"key=" + process.env.FIREBASE_AUTHORIZATION
-					}
-				},
-				(err, res, body) => {
-					if (err) console.error(err);
-					console.log(body);
+			// console.log(message.data);
+			// console.log(process.env.FIREBASE_URL);
+			let m = {
+				//this may vary according to the message type (single recipient, multicast, topic, et cetera)
+				to: user.pushToken,
+				// collapse_key: "your_collapse_key",
+				notification: {
+					title: message.sender.nickname + "님으로부터 메시지 도착",
+					body: message.data
 				}
-			);
+				// data: {
+				//     //you can send only notification or only data(or include both)
+				//     my_key: "my value",
+				//     my_another_key: "my another value"
+				// }
+			};
+
+			fcm.send(m, function(err, response) {
+				if (err) {
+					console.error(err);
+					console.log("Something has gone wrong!");
+				} else {
+					console.log("Successfully sent with response: ", response);
+				}
+			});
+
+			// request.post(
+			// 	{
+			// 		url: process.env.FIREBASE_URL,
+			// 		body: JSON.stringify({
+			// 			to: user.pushToken,
+			// 			notification: {
+			// 				title: "진솔한 메시지 도착",
+			// 				body: message.data
+			// 			}
+			// 		}),
+			// 		headers: {
+			// 			"Content-Type": "application/json",
+			// 			Authorization:
+			// 				"key=" + process.env.FIREBASE_AUTHORIZATION
+			// 		}
+			// 	},
+			// 	(err, res, body) => {
+			// 		if (err) console.error(err);
+			// 		console.log(body);
+			// 	}
+			// );
 		}
 		emitToSocketBySocketNames(socketNames, "receiveMessage", message);
 	});

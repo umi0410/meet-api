@@ -15,21 +15,32 @@ router.get("/", async function(req, res) {
 	let matches = await Match.find({
 		participants: res.locals.auth._id
 	}).populate("participants", "nickname profileMessage univeristy id");
-
-	return res.json(matches);
+	let resultMatches = [];
+	for (let _m of matches) {
+		let match = _m.toObject();
+		let lastMessage = await Message.findOne({ match: _m._id }).sort({
+			_id: -1
+		});
+		match.lastMessage = lastMessage;
+		resultMatches.push(match);
+	}
+	// console.log(matches);
+	return res.json(resultMatches);
 });
 router.get("/:matchId", async function(req, res) {
-	let page = req.query.page ? req.query.page : 0;
+	if (req.query.after) {
+		let after = await Message.find({ _id: { $lt: req.query.after } });
+		return res.json(after);
+	}
 	let limit = req.query.limit ? req.query.limit : 6;
 	let match = await Match.findById(req.params.matchId);
-	let messages = await Message.find(
-		{
-			match: match
-		},
-		{},
-		{ skip: page, limit }
-	).populate("sender", "nickname id");
-	// console.log(messages);
+	let messages = await Message.find({
+		match: match
+	})
+		.sort({ _id: -1 })
+		.limit(limit)
+		.populate("sender", "nickname id");
+	messages = messages.reverse();
 	return res.json({ match, messages });
 });
 

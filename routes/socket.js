@@ -63,6 +63,8 @@ io.on("connection", function(socket) {
 		await message.save();
 		message = await message.populate("sender").execPopulate();
 		socket.emit("sentMessage", message);
+		console.log("Sent");
+		console.log(message);
 		let socketNames = filterSocketNames("_id", data.recipient._id);
 		//연결된 소켓이 없으면 push
 		if (socketNames.length == 0) {

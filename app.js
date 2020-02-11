@@ -20,6 +20,7 @@ const tagsRouter = require("./routes/tags");
 const universitiesRouter = require("./routes/universities");
 // const webPushRouter = require("./routes/webPush");
 const pushesRouter = require("./routes/pushes");
+const debuggerRouter = require("./routes/debugger");
 const PushSubscription = require("./models/PushSubscription");
 const Message = require("./models/Message");
 const User = require("./models/User");
@@ -52,10 +53,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.post("/debugger", (req, res) => {
-	console.log(req.body);
-	res.json({ status: "ok" });
-});
 /*** Socket.IO 추가 ***/
 
 app.io = require("./routes/socket");
@@ -70,6 +67,7 @@ app.use("/questions", questionsRouter);
 app.use("/tags", tagsRouter);
 app.use("/universities", universitiesRouter);
 app.use("/pushes", pushesRouter);
+app.use("/debugger", debuggerRouter);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
 	next(createError(404));

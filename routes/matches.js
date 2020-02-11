@@ -23,7 +23,7 @@ router.get("/:matchId", async function(req, res) {
 	let messages = await Message.find({
 		match: match
 	}).populate("sender", "nickname id");
-	console.log(messages);
+	// console.log(messages);
 	return res.json({ match, messages });
 });
 

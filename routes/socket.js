@@ -76,10 +76,11 @@ io.on("connection", function(socket) {
 				to: user.pushToken,
 				// collapse_key: "your_collapse_key",
 				notification: {
-					title: message.sender.nickname + "님으로부터 메시지 도착",
+					title: message.sender.nickname + "  sent a message",
 					body: message.data,
-					image:
-						"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Heart_coraz%C3%B3n.svg/1200px-Heart_coraz%C3%B3n.svg.png"
+					image: "https://img.icons8.com/cotton/2x/like.png",
+					icon: "https://img.icons8.com/cotton/2x/like.png",
+					imageUrl: "https://img.icons8.com/cotton/2x/like.png"
 				}
 				// data: {
 				//     //you can send only notification or only data(or include both)

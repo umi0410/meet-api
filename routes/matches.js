@@ -19,10 +19,16 @@ router.get("/", async function(req, res) {
 	return res.json(matches);
 });
 router.get("/:matchId", async function(req, res) {
+	let page = req.query.page ? req.query.page : 0;
+	let limit = req.query.limit ? req.query.limit : 6;
 	let match = await Match.findById(req.params.matchId);
-	let messages = await Message.find({
-		match: match
-	}).populate("sender", "nickname id");
+	let messages = await Message.find(
+		{
+			match: match
+		},
+		{},
+		{ skip: page, limit }
+	).populate("sender", "nickname id");
 	// console.log(messages);
 	return res.json({ match, messages });
 });

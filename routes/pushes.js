@@ -2,7 +2,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 
-const { createPushNotification } = require("../middlewares/push");
 let router = express.Router();
 
 const authentication = require("../middlewares/authentication");
@@ -10,7 +9,6 @@ const authorization = require("../middlewares/authorization");
 let User = require("../models/User");
 let Match = require("../models/Match");
 let Message = require("../models/Message");
-const PushSubscription = require("../models/PushSubscription");
 
 router.post("/", authentication.authenticate, async (req, res) => {
 	// console.log(req.headers);

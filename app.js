@@ -18,13 +18,10 @@ const chatRouter = require("./routes/messages");
 const questionsRouter = require("./routes/questions");
 const tagsRouter = require("./routes/tags");
 const universitiesRouter = require("./routes/universities");
-// const webPushRouter = require("./routes/webPush");
 const pushesRouter = require("./routes/pushes");
 const debuggerRouter = require("./routes/debugger");
-const PushSubscription = require("./models/PushSubscription");
 const Message = require("./models/Message");
 const User = require("./models/User");
-const { createPushNotification } = require("./middlewares/push");
 const request = require("request");
 console.log(process.env.MONGO_HOST);
 

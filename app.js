@@ -20,6 +20,8 @@ const tagsRouter = require("./routes/tags");
 const universitiesRouter = require("./routes/universities");
 const pushesRouter = require("./routes/pushes");
 const debuggerRouter = require("./routes/debugger");
+const mailRouter = require("./routes/mail");
+
 const Message = require("./models/Message");
 const User = require("./models/User");
 const request = require("request");
@@ -65,6 +67,7 @@ app.use("/tags", tagsRouter);
 app.use("/universities", universitiesRouter);
 app.use("/pushes", pushesRouter);
 app.use("/debugger", debuggerRouter);
+app.use("/mail", mailRouter);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
 	next(createError(404));

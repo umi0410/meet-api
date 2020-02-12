@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 let router = express.Router();
 const User = require("../models/User");
@@ -29,8 +30,13 @@ router.post("/register", function(req, res) {
 	let user = new User({
 		email: req.body.email,
 		nickname: req.body.nickname,
-		password: req.body.password
+		password: req.body.password,
+		emailKey: crypto
+			.createHash("sha512")
+			.update(req.body.email + req.app.get("jwt-secret"))
+			.digest("hex")
 	});
+
 	user.save();
 	console.log(req.body);
 	res.json({ result: "success" });
@@ -50,6 +56,7 @@ router.post("/login", async function(req, res) {
 		const payload = {
 			email: user.email,
 			nickname: user.nickname,
+			isEmailVerified: user.isEmailVerified,
 			_id: user._id
 		};
 		const token = jwt.sign(payload, req.app.get("jwt-secret"));

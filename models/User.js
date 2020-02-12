@@ -3,6 +3,11 @@ const Schema = mongoose.Schema;
 
 let UserSchema = new Schema({
 	email: String,
+	isEmailVerified: {
+		type: Boolean,
+		default: false
+	},
+	emailKey: String,
 	nickname: String,
 	university: {
 		type: String,

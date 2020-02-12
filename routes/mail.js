@@ -5,10 +5,10 @@ let router = express.Router();
 /* GET meeting information */
 router.get("/", async function(req, res) {
 	let transporter = nodemailer.createTransport({
-		service: "naver",
+		service: process.env.EMAIL_PROVIDER,
 		auth: {
-			user: "bo314@naver.com", // gmail 계정 아이디를 입력
-			pass: "qkrwlstn1" // gmail 계정의 비밀번호를 입력
+			user: process.env.EMAIL_USER, // gmail 계정 아이디를 입력
+			pass: process.env.EMAIL_PASSWORD // gmail 계정의 비밀번호를 입력
 		}
 	});
 

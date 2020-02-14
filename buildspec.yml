@@ -10,13 +10,7 @@ phases:
   pre_build:
     commands:
       - echo start downloading credentials from S3 bucket
-      - aws s3 cp s3://umi0410-credentials/meet-api .
-  build:
-    commands:
-      - echo start building
-  post_build:
-    commands:
-      - echo start post_building
+      - aws s3 cp s3://umi0410-credentials/meet-api/.env .env
 
 artifacts:
   files:

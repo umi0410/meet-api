@@ -8,21 +8,15 @@ phases:
       - echo start installing ...
       - npm install
   pre_build:
-    runtime-version:
-      nodejs: 12
-      commands:
-        - echo start downloading credentials from S3 bucket
-        - aws s3 cp s3://umi0410-credentials/meet-api .
+    commands:
+      - echo start downloading credentials from S3 bucket
+      - aws s3 cp s3://umi0410-credentials/meet-api .
   build:
-    runtime-version:
-      nodejs: 12
-      commands:
-        - echo start building
+    commands:
+      - echo start building
   post_build:
-    runtime-version:
-      nodejs: 12
-      commands:
-        - echo start post_building
+    commands:
+      - echo start post_building
 
 artifacts:
   files:

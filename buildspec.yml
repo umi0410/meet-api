@@ -7,7 +7,7 @@ phases:
     commands:
       - echo start installing ...
       - npm install
-  prebuild:
+  pre_build:
     runtime-version:
       nodejs: 12
       commands:

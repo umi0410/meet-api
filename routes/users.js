@@ -1,3 +1,4 @@
+const debug = require("debug")("meet-api:dev");
 const express = require("express");
 const mongoose = require("mongoose");
 const crypto = require("crypto");
@@ -26,20 +27,31 @@ router.get(
 	}
 );
 
-router.post("/register", function(req, res) {
+router.post("/register", async function(req, res) {
 	let user = new User({
 		email: req.body.email,
 		nickname: req.body.nickname,
-		password: req.body.password,
+		password: req.body.passwordConfirm,
+		university: req.body.university.universityName,
+		campus: req.body.campus,
+		height: Number(req.body.height),
+		weight: Number(req.body.weight),
+		birthYear: Number(req.body.birthYear),
+		profileMessage: req.body.profileMessage,
 		emailKey: crypto
 			.createHash("sha512")
 			.update(req.body.email + req.app.get("jwt-secret"))
 			.digest("hex")
 	});
 
-	user.save();
+	await user.save();
 	console.log(req.body);
-	res.json({ result: "success" });
+	let token = await authentication.publishToken(
+		user,
+		req.app.get("jwt-secret")
+	);
+	console.log(token);
+	res.json({ token });
 });
 router.post("/login", async function(req, res) {
 	// token 로그인은 token verify 후 _id로 로그인,
@@ -67,15 +79,10 @@ router.post("/login", async function(req, res) {
 		res.status(403).send("No user found" + JSON.stringify(req.body));
 	} else {
 		console.log("[LOGIN]", mode, user.nickname);
-		const payload = {
-			email: user.email,
-			nickname: user.nickname,
-			isEmailVerified: user.isEmailVerified,
-			meetingStatus: user.meetingStatus,
-			_id: user._id
-		};
-		const token = jwt.sign(payload, req.app.get("jwt-secret"));
-		console.log(token);
+		const token = await authentication.publishToken(
+			user,
+			req.app.get("jwt-secret")
+		);
 		res.send({ token, user });
 	}
 });
@@ -135,6 +142,11 @@ router.put("/:userId", authentication.authenticate, async (req, res) => {
 	if (!user) res.status(404).json({ message: "no user found" });
 	//비효율적이긴하지만 이게 더 알아보기는 쉬울 듯..
 	//한 번 더 쿼리해서 이번엔 meetingStatus를 업데이트
+	console.log(
+		user.isEmailVerified,
+		isTagQualified(user),
+		isQuestionQualified(user)
+	);
 	user = await User.findByIdAndUpdate(res.locals.auth._id, {
 		meetingStatus:
 			user.isEmailVerified &&

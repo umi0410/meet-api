@@ -6,7 +6,7 @@ if (process.env.MEET_NODE_ENV === "production") {
 }
 const createError = require("http-errors");
 const express = require("express");
-
+const debug = require("debug")("meet-api:dev");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const mongoose = require("mongoose");
@@ -14,7 +14,7 @@ const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
 const meetingsRouter = require("./routes/meetings");
 const matchesRouter = require("./routes/matches");
-const chatRouter = require("./routes/messages");
+const messagesRouter = require("./routes/messages");
 const questionsRouter = require("./routes/questions");
 const tagsRouter = require("./routes/tags");
 const universitiesRouter = require("./routes/universities");
@@ -61,13 +61,13 @@ const authenticationMiddleware = require("./middlewares/authentication");
 // router.use();
 app.use("/meetings", meetingsRouter);
 app.use("/matches", matchesRouter);
-app.use("/chats", chatRouter);
 app.use("/questions", questionsRouter);
 app.use("/tags", tagsRouter);
 app.use("/universities", universitiesRouter);
 app.use("/pushes", pushesRouter);
 app.use("/debugger", debuggerRouter);
 app.use("/mail", mailRouter);
+app.use("/messages", messagesRouter);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
 	next(createError(404));

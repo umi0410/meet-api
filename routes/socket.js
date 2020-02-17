@@ -2,7 +2,7 @@ const Message = require("../models/Message");
 const User = require("../models/User");
 const request = require("request");
 const FCM = require("fcm-node");
-
+const debug = require("debug")("meet-api:dev");
 const serverKey = require("../fcmPrivateKey.json"); //put the generated private key path here
 
 let fcm = new FCM(serverKey);
@@ -46,14 +46,14 @@ io.use(function auth(socket, next) {
 	next();
 });
 io.on("connection", function(socket) {
-	console.log("a user connected");
+	debug("a user connected");
 
 	socket.on("disconnect", function() {
-		console.log("user disconnected");
+		debug("user disconnected");
 	});
 
 	socket.on("sendMessage", async function(data) {
-		console.log("sentMessage");
+		debug("sentMessage");
 		//chatRoom이 곧 match임
 		let message = new Message({
 			match: data.chatRoom._id,
@@ -63,14 +63,14 @@ io.on("connection", function(socket) {
 		await message.save();
 		message = await message.populate("sender").execPopulate();
 		socket.emit("sentMessage", message);
-		console.log("Sent");
-		console.log(message);
+		debug("Sent");
+		debug(message);
 		let socketNames = filterSocketNames("_id", data.recipient._id);
 		//연결된 소켓이 없으면 push
 		if (socketNames.length == 0) {
 			let user = await User.findById(data.recipient._id);
-			console.log(user.nickname + "에게 푸시알림 시도");
-			console.log("pushToken", user.pushToken);
+			debug(user.nickname + "에게 푸시알림 시도");
+			debug("pushToken", user.pushToken);
 			// console.log(message.data);
 			// console.log(process.env.FIREBASE_URL);
 			let m = {

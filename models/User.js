@@ -4,6 +4,7 @@ const MINIMUM_TAGS = 10;
 const MINIMUM_QUESTIONS = 3;
 let UserSchema = new Schema({
 	email: String,
+	emailKey: String,
 	isEmailVerified: {
 		type: Boolean,
 		default: false
@@ -13,15 +14,22 @@ let UserSchema = new Schema({
 		enum: ["UNQUALIFIED", "WAITING", "ONGOING"],
 		default: "UNQUALIFIED"
 	},
-	emailKey: String,
+
 	nickname: String,
 	university: {
 		type: String,
-		default: "경희대학교"
+		default: "학교미인증"
 	},
+	campus: {
+		type: String,
+		default: undefined
+	},
+	height: Number,
+	weight: Number,
+	birthYear: Number,
 	profileMessage: {
 		type: String,
-		default: "안녕, hello, world"
+		default: "프로필메시지를 입력하지 않았습니다."
 	},
 	likes: {
 		type: [String]

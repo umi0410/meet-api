@@ -1,22 +1,28 @@
 const jwt = require("jsonwebtoken");
 
-function authenticate(req, res, next) {
-	// console.log(req.headers);;
-	let authentication = jwt.verify(
-		req.headers["x-access-token"],
-		req.app.get("jwt-secret"),
-		(err, decoded) => {
+async function decodeJWT(token, secretKey) {
+	return new Promise((resolve, reject) => {
+		jwt.verify(token, secretKey, (err, decoded) => {
 			//err 있을 때 작업 수정해야함
 			console.error(err);
-			if (err) return res.status(403).json("wrong token");
+			if (err) return reject("wrong token");
 			else {
-				res.locals.auth = decoded;
-				next();
+				resolve(decoded);
 			}
-		}
+		});
+	});
+}
+async function authenticate(req, res, next) {
+	// console.log(req.headers);;
+	let decodedToken = await decodeJWT(
+		req.headers["x-access-token"],
+		req.app.get("jwt-secret")
 	);
+	res.locals.auth = decodedToken;
+	next();
 }
 
 module.exports = {
-	authenticate
+	authenticate,
+	decodeJWT
 };

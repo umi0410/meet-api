@@ -1,11 +1,17 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-
+const MINIMUM_TAGS = 10;
+const MINIMUM_QUESTIONS = 3;
 let UserSchema = new Schema({
 	email: String,
 	isEmailVerified: {
 		type: Boolean,
 		default: false
+	},
+	meetingStatus: {
+		type: String,
+		enum: ["UNQUALIFIED", "WAITING", "ONGOING"],
+		default: "UNQUALIFIED"
 	},
 	emailKey: String,
 	nickname: String,
@@ -18,28 +24,10 @@ let UserSchema = new Schema({
 		default: "안녕, hello, world"
 	},
 	likes: {
-		type: [String],
-		default: [
-			"sell",
-			"garden",
-			"thus",
-			"combination",
-			"wise",
-			"lonely",
-			"repeat"
-		]
+		type: [String]
 	},
 	hates: {
-		type: [String],
-		default: [
-			"adventure",
-			"path",
-			"raise",
-			"inch",
-			"stock",
-			"generally",
-			"south"
-		]
+		type: [String]
 	},
 	excludeCandidates: [
 		{
@@ -75,5 +63,7 @@ let UserSchema = new Schema({
 	loggedin: { type: Date, default: Date.now },
 	password: String
 });
-
-module.exports = mongoose.model("User", UserSchema);
+const model = mongoose.model("User", UserSchema);
+model.MINIMUM_TAGS = MINIMUM_TAGS;
+model.MINIMUM_QUESTIONS = MINIMUM_QUESTIONS;
+module.exports = model;

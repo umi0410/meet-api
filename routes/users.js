@@ -1,4 +1,3 @@
-const debug = require("debug")("meet-api:dev");
 const express = require("express");
 const mongoose = require("mongoose");
 const crypto = require("crypto");
@@ -7,6 +6,7 @@ let router = express.Router();
 const User = require("../models/User");
 const authentication = require("../middlewares/authentication");
 const authorization = require("../middlewares/authorization");
+const debug = require("debug")("meet-api:users");
 /* GET users listing. */
 //Authentication, Authorization 추가되어야함
 router.get(
@@ -45,12 +45,12 @@ router.post("/register", async function(req, res) {
 	});
 
 	await user.save();
-	console.log(req.body);
+	debug(req.body);
 	let token = await authentication.publishToken(
 		user,
 		req.app.get("jwt-secret")
 	);
-	console.log(token);
+	debug(token);
 	res.json({ token });
 });
 router.post("/login", async function(req, res) {

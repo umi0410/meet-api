@@ -1,14 +1,21 @@
 const path = require("path");
+if (!process.env.MEET_NODE_ENV) {
+	console.error("* Please set MEET_NODE_ENV as production or development\n");
+	console.error("* Default MEET_NODE_ENV is 'development'");
+	process.env.MEET_NODE_ENV = "development";
+}
 if (process.env.MEET_NODE_ENV === "production") {
 	require("dotenv").config({ path: path.join(__dirname, ".env.production") });
 } else {
 	require("dotenv").config();
 }
+console.log(process.env.DEBUG);
 const createError = require("http-errors");
 const express = require("express");
 const debug = require("debug")("meet-api:dev");
 const cookieParser = require("cookie-parser");
-const logger = require("morgan");
+const morgan = require("morgan");
+const logger = require("./logger");
 const mongoose = require("mongoose");
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
@@ -46,7 +53,7 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 app.set("jwt-secret", process.env.JWT_SECRET);
 
-app.use(logger("dev"));
+app.use(morgan("common", { stream: logger.stream }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

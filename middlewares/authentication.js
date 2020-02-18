@@ -1,12 +1,14 @@
 const jwt = require("jsonwebtoken");
-
+const debug = require("debug")("meet-api:middlewares");
 async function decodeJWT(token, secretKey) {
 	return new Promise((resolve, reject) => {
 		jwt.verify(token, secretKey, (err, decoded) => {
 			//err 있을 때 작업 수정해야함
 			// console.error(err);
-			if (err) return reject("wrong token");
-			else {
+			if (err) {
+				debug("wrong token");
+				return reject("wrong token");
+			} else {
 				resolve(decoded);
 			}
 		});
@@ -14,6 +16,7 @@ async function decodeJWT(token, secretKey) {
 }
 async function authenticate(req, res, next) {
 	// console.log(req.headers);;
+	debug(req.headers);
 	let decodedToken = await decodeJWT(
 		req.headers["x-access-token"],
 		req.app.get("jwt-secret")
@@ -29,6 +32,7 @@ async function publishToken(user, secretKey) {
 		_id: user._id
 	};
 	const token = await jwt.sign(payload, secretKey);
+	debug(token);
 	return token;
 }
 module.exports = {

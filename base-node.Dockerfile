@@ -3,4 +3,5 @@ FROM node:13
 COPY package.json /app/package.json
 WORKDIR /app
 RUN npm install
+RUN npm install -g nodemon forever
 # CMD ["node"]

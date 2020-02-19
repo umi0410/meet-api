@@ -2,6 +2,7 @@ const Message = require("../models/Message");
 const User = require("../models/User");
 const request = require("request");
 const FCM = require("fcm-node");
+const debug = require("debug")("meet-api:socket");
 const serverKey = require("../fcmPrivateKey.json"); //put the generated private key path here
 
 let fcm = new FCM(serverKey);

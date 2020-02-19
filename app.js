@@ -1,3 +1,4 @@
+console.log(process.env.MEET_NODE_ENV);
 const path = require("path");
 if (!process.env.MEET_NODE_ENV) {
 	console.error("* Please set MEET_NODE_ENV as production or development\n");
@@ -9,7 +10,7 @@ if (process.env.MEET_NODE_ENV === "production") {
 } else {
 	require("dotenv").config();
 }
-console.log(process.env.DEBUG);
+
 const createError = require("http-errors");
 const express = require("express");
 const debug = require("debug")("meet-api:dev");

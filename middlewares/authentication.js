@@ -32,7 +32,6 @@ async function publishToken(user, secretKey) {
 		_id: user._id
 	};
 	const token = await jwt.sign(payload, secretKey);
-	debug(token);
 	return token;
 }
 module.exports = {

@@ -1,6 +1,9 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
+const debug = require("debug")("meet-api:meeting");
+const logger = require("../logger");
+// const debug = require("debug")("meet-a")
 let router = express.Router();
 
 const authenticationMiddleware = require("../middlewares/authentication");
@@ -9,6 +12,7 @@ let User = require("../models/User");
 let Match = require("../models/Match");
 /* GET meeting information */
 router.get("/", async function(req, res) {
+	let result = {};
 	let { excludeCandidates } = await User.findById(res.locals.auth._id);
 
 	let candidates = await User.find({
@@ -16,6 +20,12 @@ router.get("/", async function(req, res) {
 			$nin: [...excludeCandidates, res.locals.auth._id]
 		}
 	}).select("id");
+	if (candidates.length == 0) {
+		debug(res.locals.auth);
+		logger.info(res.locals.auth.email + "의 매치후보가 없음.");
+		result.status = "noCandidate";
+		return res.json(result);
+	}
 	let randomIndex = Math.floor(Math.random() * candidates.length);
 	let partner = await User.findOne({
 		_id: {
@@ -24,25 +34,25 @@ router.get("/", async function(req, res) {
 	})
 		.skip(randomIndex)
 		.select("id university nickname likes hates profileMessage questions");
-	let result = {};
+
 	if (partner) {
 		result.status = "success";
 		result.partner = partner;
 	} else {
+		logger.info(partner);
 		result.status = "failed";
 	}
 	return res.json(result);
 });
 router.post("/", async function(req, res) {
-	// console.log(req.query);
+	// debug(req.query);
 	if (!["like", "hate"].includes(req.query.action)) {
 		return res.status(403).json({ message: "No action defined" });
 	}
-	// console.log(req.headers["x-access-token"]);
+	// debug(req.headers["x-access-token"]);
 	if (!req.headers["x-access-token"]) {
 		return res.status(403).json({ message: "no token included" });
 	}
-	console.log(req.query);
 	let partner = await User.findById(req.query.id);
 	if (!partner) {
 		res.status(403).json({
@@ -50,16 +60,16 @@ router.post("/", async function(req, res) {
 		});
 	} else {
 		let user = await User.findById(res.locals.auth._id);
-		console.log(user);
-		console.log("상대방이 좋아한 사람");
-		console.log(partner.likePartners);
+		debug(user);
+		debug("상대방이 좋아한 사람");
+		debug(partner.likePartners);
 		if (!user.likePartners.includes(partner._id)) {
 			//동시성에 대한 논란이....
-			console.log("추가함");
+			debug("추가함");
 			user.likePartners.push(partner.id);
 		}
 		if (partner.likePartners.includes(res.locals.auth._id)) {
-			console.log("매치 성공");
+			debug("매치 성공");
 			let match = await new Match({
 				participants: [partner._id, res.locals.auth._id]
 			});
@@ -70,13 +80,13 @@ router.post("/", async function(req, res) {
 				)
 				.execPopulate();
 			//왜 await 만 쓰면 안 되는 거니..?
-			console.log(match);
+			debug(match);
 			await match.save();
-			console.log("내 id" + res.locals.auth._id);
+			debug("내 id" + res.locals.auth._id);
 			partner.likePartners = partner.likePartners.filter(likeUser => {
 				//likeUser는 partner가 like한 유저
 				//나는 partner의 likeUsers에서 빼고 match로 넘어감.
-				console.log("내 id" + likeUser._id);
+				debug("내 id" + likeUser._id);
 				if (likeUser._id != res.locals.auth._id) {
 					return true;
 				} else return false;

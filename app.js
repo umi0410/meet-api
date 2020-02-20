@@ -1,4 +1,4 @@
-console.log(process.env.MEET_NODE_ENV);
+console.log("NODE_ENV:" + process.env.MEET_NODE_ENV);
 const path = require("path");
 if (!process.env.MEET_NODE_ENV) {
 	console.error("* Please set MEET_NODE_ENV as production or development\n");
@@ -33,11 +33,12 @@ const mailRouter = require("./routes/mail");
 const Message = require("./models/Message");
 const User = require("./models/User");
 const request = require("request");
-console.log(process.env.MONGO_HOST);
+logger.info(process.env.MONGO_HOST);
 
 const app = express();
 const cors = require("cors");
-
+const { initiate } = require("./initiator");
+initiate(app);
 app.use(cors());
 var db = mongoose.connection;
 db.on("error", console.error);
@@ -46,8 +47,10 @@ db.once("open", function() {
 	console.log("Connected to mongod server");
 });
 
-mongoose.connect(process.env.MONGO_HOST);
-
+mongoose.connect(process.env.MONGO_HOST, {
+	useNewUrlParser: true,
+	useUnifiedTopology: true
+});
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 // app.set("view engine", "jade");

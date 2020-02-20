@@ -29,7 +29,11 @@ const options = {
 		handleExceptions: true,
 		json: false, // 로그형태를 json으로도 뽑을 수 있다.
 		colorize: true,
-		format: combine(label({ label: "meet-api" }), timestamp(), myFormat),
+		format: combine(
+			label({ label: "meet-api" }),
+			timestamp({ format: "YYYY-MM-DD, HH:MM:SS" }),
+			myFormat
+		),
 		eol: ""
 	}
 };
@@ -41,7 +45,7 @@ let fileTransport = new winston.transports.DailyRotateFile({
 	level: "debug",
 	format: combine(
 		label({ label: "meet-api" }),
-		timestamp(),
+		timestamp({ format: "YYYY-MM-DD, HH:MM:SS" }),
 		// splat(),
 		myFormat // log 출력 포맷
 	)

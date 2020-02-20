@@ -19,7 +19,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.meet-api
-    
+    volumes:
+      - $HOME/meet-api-logs:/app/logs
     environment:
       # express의 환경변수 설정을 분화시킴.
       - MEET_NODE_ENV=production

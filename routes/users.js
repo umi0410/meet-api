@@ -7,23 +7,18 @@ const User = require("../models/User");
 const authentication = require("../middlewares/authentication");
 const authorization = require("../middlewares/authorization");
 const debug = require("debug")("meet-api:users");
-/* GET users listing. */
-//Authentication, Authorization 추가되어야함
+const { createHash } = require("../middlewares/hashEncrypt");
+const logger = require("../logger");
 router.get(
 	"/:userId",
 	authentication.authenticate,
 	authorization.isUserReadable,
 	async function(req, res) {
 		let user = res.locals.user;
-		// await delete user.nickname;
-		// user.nickname = undefined;
 		user.likePartners = undefined;
 		user.excludeCandidates = undefined;
 		user.password = undefined;
 		return res.json({ user: user, status: "success" });
-		// setTimeout(() => {
-
-		// }, 5000);
 	}
 );
 
@@ -31,17 +26,14 @@ router.post("/register", async function(req, res) {
 	let user = new User({
 		email: req.body.email,
 		nickname: req.body.nickname,
-		password: req.body.passwordConfirm,
+		password: createHash(req.body.passwordConfirm),
 		university: req.body.university.universityName,
 		campus: req.body.campus,
 		height: Number(req.body.height),
 		weight: Number(req.body.weight),
 		birthYear: Number(req.body.birthYear),
 		profileMessage: req.body.profileMessage,
-		emailKey: crypto
-			.createHash("sha512")
-			.update(req.body.email + req.app.get("jwt-secret"))
-			.digest("hex")
+		emailKey: createHash(req.body.email + String(Date.now()))
 	});
 
 	await user.save();
@@ -63,27 +55,28 @@ router.post("/login", async function(req, res) {
 			req.headers["x-access-token"],
 			req.app.get("jwt-secret")
 		);
-		user = await User.findOneAndUpdate(decodedToken._id, {
+		user = await User.findByIdAndUpdate(decodedToken._id, {
 			loggedin: Date.now()
 		});
 	} else {
 		user = await User.findOneAndUpdate(
 			{
 				email: req.body.email,
-				password: req.body.password
+				password: createHash(req.body.password)
 			},
 			{ loggedin: Date.now() }
 		);
 	}
 	if (!user) {
+		logger.info("[LOGIN] failed", req.body.email, req.body.password);
 		res.status(403).send("No user found" + JSON.stringify(req.body));
 	} else {
-		console.log("[LOGIN]", mode, user.nickname);
+		logger.info("[LOGIN] success", mode, user.email);
 		const token = await authentication.publishToken(
 			user,
 			req.app.get("jwt-secret")
 		);
-		res.send({ token, user });
+		return res.send({ token, user });
 	}
 });
 

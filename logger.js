@@ -36,7 +36,7 @@ const options = {
 let fileTransport = new winston.transports.DailyRotateFile({
 	dirname: process.env.LOG_DIR || "logs",
 	filename: "meet-api-%DATE%.log",
-	datePattern: "YYYY-MM-DD-HH",
+	datePattern: "YYYY-MM-DD",
 	json: true,
 	level: "debug",
 	format: combine(

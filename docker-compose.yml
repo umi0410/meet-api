@@ -18,7 +18,7 @@ services:
     # 근데 이게 더 편할 듯.
     build:
       context: .
-      dockerfile: meet-api.Dockerfile
+      dockerfile: Dockerfile.meet-api
     
     environment:
       # express의 환경변수 설정을 분화시킴.

@@ -35,8 +35,16 @@ let UserSchema = new Schema({
 		enum: ["FEMALE", "MALE"],
 		default: "FEMALE"
 	},
-	height: Number,
-	weight: Number,
+	heightType: {
+		type: String,
+		enum: [
+			"많이 작은 편",
+			"조금 작은 편", "보통", "조금 큰 편", "많이 큰 편"
+		],
+		default: "보통"
+	},
+	// height: Number,
+	// weight: Number,
 	birthYear: Number,
 	profileMessage: {
 		type: String,

@@ -9,11 +9,12 @@ const authorization = require("../middlewares/authorization");
 const debug = require("debug")("meet-api:users");
 const { createHash } = require("../middlewares/hashEncrypt");
 const logger = require("../logger");
+router.get("/test", (req, res) => { res.send("HOOD") })
 router.get(
 	"/:userId",
 	authentication.authenticate,
 	authorization.isUserReadable,
-	async function(req, res) {
+	async function (req, res) {
 		let user = res.locals.user;
 		user.likePartners = undefined;
 		user.excludeCandidates = undefined;
@@ -22,7 +23,10 @@ router.get(
 	}
 );
 
-router.post("/register", async function(req, res) {
+//굳이 register라는 url을 줄 필요는 없었을 것 같은데..
+router.post("/register", async function (req, res) {
+	debug("req.body")
+	debug(req.body)
 	let user = new User({
 		email: req.body.email,
 		nickname: req.body.nickname,
@@ -37,15 +41,15 @@ router.post("/register", async function(req, res) {
 	});
 
 	await user.save();
-	debug(req.body);
 	let token = await authentication.publishToken(
 		user,
 		req.app.get("jwt-secret")
 	);
+	debug("account token")
 	debug(token);
 	res.json({ token });
 });
-router.post("/login", async function(req, res) {
+router.post("/login", async function (req, res) {
 	// token 로그인은 token verify 후 _id로 로그인,
 	// default 로그인은 이메일, 패스워드로 로그인
 	let mode = req.body.mode == "token" ? "token" : "default";
@@ -143,8 +147,8 @@ router.put("/:userId", authentication.authenticate, async (req, res) => {
 	user = await User.findByIdAndUpdate(res.locals.auth._id, {
 		meetingStatus:
 			user.isEmailVerified &&
-			isTagQualified(user) &&
-			isQuestionQualified(user)
+				isTagQualified(user) &&
+				isQuestionQualified(user)
 				? "WAITING"
 				: "UNQUALIFIED"
 	});

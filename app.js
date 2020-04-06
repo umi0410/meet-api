@@ -29,6 +29,7 @@ const universitiesRouter = require("./routes/universities");
 const pushesRouter = require("./routes/pushes");
 const debuggerRouter = require("./routes/debugger");
 const mailRouter = require("./routes/mail");
+const validationsRouter = require("./routes/validations");
 
 const Message = require("./models/Message");
 const User = require("./models/User");
@@ -42,7 +43,7 @@ initiate(app);
 app.use(cors());
 var db = mongoose.connection;
 db.on("error", console.error);
-db.once("open", function() {
+db.once("open", function () {
 	// CONNECTED TO MONGODB SERVER
 	console.log("Connected to mongod server");
 });
@@ -79,13 +80,14 @@ app.use("/pushes", pushesRouter);
 app.use("/debugger", debuggerRouter);
 app.use("/mail", mailRouter);
 app.use("/messages", messagesRouter);
+app.use("/validations", validationsRouter)
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
 	next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
 	// set locals, only providing error in development
 	res.locals.message = err.message;
 	res.locals.error = req.app.get("env") === "development" ? err : {};

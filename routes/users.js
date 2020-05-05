@@ -9,13 +9,15 @@ const authorization = require("../middlewares/authorization");
 const debug = require("debug")("meet-api:users");
 const { createHash } = require("../middlewares/hashEncrypt");
 const logger = require("../logger");
+const fs = require("fs")
 router.get("/test", (req, res) => { res.send("HOOD") })
 router.get(
 	"/:userId",
 	authentication.authenticate,
 	authorization.isUserReadable,
 	async function (req, res) {
-		let user = res.locals.user;
+		// let user = res.locals.user;
+		let user = await User.findById(req.params.userId)
 		user.likePartners = undefined;
 		user.excludeCandidates = undefined;
 		user.password = undefined;
@@ -33,13 +35,14 @@ router.post("/register", async function (req, res) {
 		password: createHash(req.body.passwordConfirm),
 		university: req.body.university.universityName,
 		campus: req.body.campus,
-		height: Number(req.body.height),
-		weight: Number(req.body.weight),
+		heightType: req.body.heightType,
+		sex: req.body.sex,
 		birthYear: Number(req.body.birthYear),
 		profileMessage: req.body.profileMessage,
 		emailKey: createHash(req.body.email + String(Date.now()))
 	});
-
+	debug(req.body.profileImage)
+	fs.writeFileSync("test.png", req.body.profileImage)
 	await user.save();
 	let token = await authentication.publishToken(
 		user,
@@ -157,4 +160,10 @@ router.put("/:userId", authentication.authenticate, async (req, res) => {
 	return res.json({ user });
 });
 
+router.delete("/:userId", async (req, res) => {
+	let user = await User.findOne()
+	// User Schema에서 pre remove 설정하기
+	//https://stackoverflow.com/questions/14348516/cascade-style-delete-in-mongoose
+	await user.remove()
+})
 module.exports = router;

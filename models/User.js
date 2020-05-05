@@ -46,6 +46,10 @@ let UserSchema = new Schema({
 	// height: Number,
 	// weight: Number,
 	birthYear: Number,
+	profileImage: {
+		type: String,
+		default: "female-profile.png"
+	},
 	profileMessage: {
 		type: String,
 		default: "프로필메시지를 입력하지 않았습니다."
@@ -70,6 +74,11 @@ let UserSchema = new Schema({
 			}
 		]
 	},
+	isValidMeetingInfo: {
+		type: Boolean,
+		default: false
+	},
+
 	//미팅후보에서 제외될 User
 	excludeCandidates: [
 		{

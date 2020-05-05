@@ -11,15 +11,33 @@ router.use(authenticationMiddleware.authenticate);
 let User = require("../models/User");
 let Match = require("../models/Match");
 /* GET meeting information */
-router.get("/", async function(req, res) {
+router.get("/", async function (req, res) {
 	let result = {};
-	let { excludeCandidates } = await User.findById(res.locals.auth._id);
-
+	let { id, sex, excludeCandidates } = await User.findById(res.locals.auth._id);
+	let matchedPartners = []
+	let matches = await Match.find({
+		participants:
+		{
+			$in: id
+		}
+	})
+	for (let m of matches) {
+		let u1 = await User.findById(m.participants[0]._id)
+		let u2 = await User.findById(m.participants[1]._id)
+		if (String(u1._id) != id) matchedPartners.push(String(u1._id))
+		if (String(u2._id) != id) matchedPartners.push(String(u2._id))
+	}
+	// console.log(matches.length)
+	// console.log(matchedPartners)
+	//개수세고, 비었는지, 랜덤인덱스의 최댓값은 몇일지 판별
 	let candidates = await User.find({
 		_id: {
-			$nin: [...excludeCandidates, res.locals.auth._id]
+			$nin: [...excludeCandidates, res.locals.auth._id, ...matchedPartners]
+		}, sex: {
+			$ne: sex
 		}
-	}).select("id");
+	}).select("id nickname");
+	console.log(candidates)
 	if (candidates.length == 0) {
 		debug(res.locals.auth);
 		logger.info(res.locals.auth.email + "의 매치후보가 없음.");
@@ -30,10 +48,12 @@ router.get("/", async function(req, res) {
 	let partner = await User.findOne({
 		_id: {
 			$nin: [...excludeCandidates, res.locals.auth._id]
+		}, sex: {
+			$ne: sex
 		}
 	})
 		.skip(randomIndex)
-		.select("id university nickname likes hates profileMessage questions");
+		.select("id university nickname likes hates profileMessage questions heightType sex");
 
 	if (partner) {
 		result.status = "success";
@@ -44,7 +64,7 @@ router.get("/", async function(req, res) {
 	}
 	return res.json(result);
 });
-router.post("/", async function(req, res) {
+router.post("/", async function (req, res) {
 	// debug(req.query);
 	if (!["like", "hate"].includes(req.query.action)) {
 		return res.status(403).json({ message: "No action defined" });

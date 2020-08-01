@@ -25,6 +25,7 @@ services:
       # express의 환경변수 설정을 분화시킴.
       - MEET_NODE_ENV=production
       - WAIT_HOSTS=mongo-container:27017
+      - MONGO_HOST=mongodb://mongo-container/meet
     # nginx에서 host의 3001번을 https로 하였음
     ports:
       - "3001:3000"
